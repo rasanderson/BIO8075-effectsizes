@@ -9,6 +9,8 @@ library(learnr)
 library(mosaic)
 library(metafor)
 library(shiny)
+statin_dat <- read.csv("www/statin.csv", row.names=1)
+dat <- statin_dat
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
@@ -145,19 +147,15 @@ The raw data can be accessed in the R data.frame below. The columns represent:
 * ep1t = number of treated patients who suffered heart disease
 * ep1c = number of control patients who suffered heart disease
 
-```{r borenstein_chap01-setup}
-library(metafor)
-statin_dat <- dat.cannon2006[,c(1,3:6)]
-```
 
-```{r borenstein_chap01, exercise=TRUE}
+```{r borensteinchap01, exercise=TRUE}
 statin_dat
+
 ```
 
 These data can then be used to construct the following plot, which is shown on Page 4 of Borenstein as Figure 1.1 However, this version has an advantage over the one in the book. You can alter the effect sizes (risk ratios)! 
 
 ```{r, echo = FALSE}
-    dat <- dat.cannon2006[,1:6]
     # Application title
     #titlePanel("How a meta-analysis works")
     plotOutput("metaPlot")
@@ -266,4 +264,3 @@ question("Altering the effect size (risk ratios) of the 'PROVE IT' and 'A-TO-Z' 
          answer("The INT and IDEAL trials had more than twice as many patients", correct = TRUE),
          answer("The 95% confidence intervals are more than twice that for the other studies"))
 ```
-
