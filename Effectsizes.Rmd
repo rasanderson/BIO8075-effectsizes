@@ -35,7 +35,7 @@ If you are like most people you may have ticked the wrong answer, and the correc
 ## Populations and samples
 These two terms are used by statistians in any discipline of science, to refer to particular statistical concepts. However, as ecologists we're used to thinking about populations as being a 'population of animals' etc., and so it is easy to get confused by the statistical geekdom. Let's go back to our hay meadow, where we want to work out the mean number of species per $m^2$. Here's a representation of your meadow:
 
-![](www/meadow.png)
+![](www/meadow.png){width=75%}
 
 As you might expect, some parts of your meadow have lots of species of flowering plants present, others parts relatively few and dominated by grasses. So what is the mean number of flowering plants per $m^2$ in your meadow? There are two approaches:
 
@@ -43,6 +43,39 @@ As you might expect, some parts of your meadow have lots of species of flowering
 * randomly place 6 vegetation quadrats, each $1m^2$ in your meadow, and calculate the average number of flowering plants from your quadrats. This is the **sample mean**.
 
 In many, if not most situations, it is actually impossible to determine the population mean reliably, hence we use sample means. The problem with sample means is that because of their inherent randomness, such as our 6 randomly placed quadrats, you will get a slightly different result each time. The more quadrats you take, the smaller the 95% CI around your sample mean, but there will still be variability.
+
+## Null hypothesis significance testing
+You may well be familiar with the "signficant at p<0.05" style of presentation, which is not a good one. This page summarises what we indicate by NHST, how it should be reported, and how to interpret it. Some scientists (e.g. Gavin) and peer-reviewed journals are now discouraging uncritical use of p-values and NHST. One method of reducing the problem is via Bayesian approaches. NHST methods were partly developed by Sir Ronald Fisher in the 1920s
+
+![](www/fisher.png)
+
+### What is the Null Hypothesis?
+The null hypothesis if that your intervention is having no effect on your outcome. So if you are looking at the effects of low intensity grazing on haymeadow biodiversity, your null hypothesis is "low intensity grazing has no effect on haymeadow biodiversity". The null hypothesis is usually represented in statistical notation as $H_0$ and you may see this in textbooks etc. The mysterious p-value is therefore the probability of you obtaining the observed data if the null hypothesis is true. Mathematically, this is written:
+
+$$p(D | H_0)$$
+Read the above line as "the probability of obtaining the observed data ($D$) if the null hypothesis $H_0$ is true". By convention if p is less than 0.05 (1 in 20) we reject the null hypothesis. Note: whilst we are rejecting the null hypothesis, this is not the same as saying that we are accepting the "alternate hypothesis" $H_A$ that there is an effect of your low intensity grazing!
+
+When reporting your results, never merely say your statistical test was "significant" or "non-significant". Always give the p-value in full, **and** the test-statistic **and** the degrees of freedom **and** the effect size **and** an indication of variation around the effect size (standard error, 95% CI). Unfortunately most peer-reviewed papers lack one or more of these.
+
+### What is the problem with this?
+If you start thinking about this two obvious issues arise:
+
+1. I'm not really interested in the probability of the observed data. I have already collected it. It's the probability of the hypothesis that you are interested in, not the probability of the data
+2. You are not concerned about $H_0$. The hypothesis you really want to learn about is $H_A$ yet a conventional NHST does not provide you with information on this.
+
+### Bayesian approaches
+These were developed by the Rev Thomas Bayes in the 18th Century, but have only become popular in the last 10 years as computationally they are much more challenging to implement.
+
+![What is the probability he looked like this?](www/bayes.png)
+
+Bayesian methods use the concept of prior probabilities, in other words, existing knowledge, and likelihoods of data given a hypothesis, to calculate a posterior probability:
+
+$$\textit{posterior probability   }\alpha \textit{  likelihood of observed data} \times \textit{prior probability}$$
+You may see the posterior probability written as:
+
+$$p(H_A | D)$$
+
+which is the probability of your intervention having had an effect, given the data you have collected. This is much more intuitive than NHST which is partly why Bayesian methods are increasing in popularity.
 
 ## Effect sizes
 ### What are effect sizes and why do they matter?
