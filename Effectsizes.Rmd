@@ -7,6 +7,8 @@ runtime: shiny_prerendered
 ```{r setup, include=FALSE}
 library(learnr)
 library(mosaic)
+library(metafor)
+library(shiny)
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
@@ -65,44 +67,170 @@ Therefore, when reporting p-values, it is essential to record some measure of va
 
 You might also find [this video](https://www.youtube.com/watch?feature=player_embedded&v=ez4DgdurRPg) of dancing p-values from Geoff Cummings entertaining and informative. There is also [this interactive](https://rpsychologist.com/d3/ci/) on confidence intervals and p-values helpful to your understanding.
 
-Write the R code required to add two plus two:
+## How to measure effect sizes
+We will cover these in much more detail later, and discuss how to convert between effect sizes, so this page just gives you an overview of some of the main types. There are actually a large numbers of different methods of measuring effect sizes, depending on the characteristics of your data. Effect sizes are designed to put the outcomes of the different studies being combined on the same scale, so that they can be incorporated into your meta-analysis. Some of the most common ones are:
 
-```{r two-plus-two, exercise=TRUE}
+### Effect sizes based on means
+Raw unstandardised mean differences (D) are generally of little value as they do not correct properly for variability  in your data. So the most common approach is **standardised mean differences** especially **Hedges d or g** measures. Another effect size based on means is **response ratio** calculated by dividing one mean by another. As soon as you work with ratios, it is generally better to use logarithms.
+
+For example, suppose you have a mean of 5.3 for one intervention, and a mean of 8.7 for the other. Quite obviously your ratios will be quite different if you divide them in different orders, but if you take logarithms, the sign changes, but the magnitude remains constant:
+
+```{r response_ratio, exercise=TRUE}
+# Original data; order of calculation of ratio matters
+5.3 / 8.7
+8.7 / 5.3
+
+# Log response ratio and only the sign changes but magnitude consistent
+log(5.3 / 8.7)
+log(8.7 / 5.3)
+```
+
+### Effect sizes based on binary data
+Binary data, also known as dichotomous or frequency data. These types of data are often encountered in ecological surveys, for example whether an animal is ‘dead’ vs ‘alive’ or ‘present’ vs ‘absent’, or 'healthy' vs 'unhealthy'. The two main methods are **risk ratios** and **odds ratios**
+
+* **risk ratios** This is the ratio of two risks (as the name suggests). So e.g. if the risk of a vaccinated badger having bovine TB is 5 in 100 treated badgers, and the risk of an unvaccinated badger has bovine TB is 10 in 100 untreated badgers, then the risk ratio is 5/100 / 10/100 = 0.50. Again, we generally take logarithms.
+
+$$\frac{5\div100}{10\div100}=0.5$$
+
+* **odds ratios** Taking our badger example again it is a slight re-working of the original numbers. Again, the ratios are usually then converted to logarithms:
+
+$$\frac{5\div(100-5)}{10\div(100-10)}=\frac{5\div95}{10\div95}=0.4737$$
+
+
+### Effect sizes based on correlations
+If two continuous variables have a high correlation with each other the scatter of points will generally create a straight line, increasing with a positive correlation, and decreasing with a negative correlation. If the scatter of points is random, the correlation is zero, with the correlation coefficient, r, measured between -1 and +1. [This interactive](https://rpsychologist.com/correlation/) gives a very nice summary of correlation. Correlation data are widely reported in the ecological literature.
+
+However, in general for meta-analysis, we do not work with the raw correlations, but instead convert them to **Fisher's _z_ scores**. Note: do not confuse this with the z-statistic sometimes used in statistical tests.
+
+## A simple example of meta-analysis
+This uses the example taken from Chapter 1 of Borenstein. It is based on 4 trials of statins to see if they reduce the chance of heart disease. It is based on risk-ratios.
+
+The raw data can be accessed in the R data.frame below. The columns represent:
+
+* nt = number of patients treated with statins
+* nc = number of patients with control dose
+* ep1t = number of treated patients who suffered heart disease
+* ep1c = number of control patients who suffered heart disease
+
+```{r borenstein_chap01-setup}
+library(metafor)
+statin_dat <- dat.cannon2006[,c(1,3:6)]
+```
+
+```{r borenstein_chap01, exercise=TRUE}
+statin_dat
+```
+
+These data can then be used to construct the following plot, which is shown on Page 4 of Borenstein as Figure 1.1 However, this version has an advantage over the one in the book. You can alter the effect sizes (risk ratios)! 
+
+```{r, echo = FALSE}
+    dat <- dat.cannon2006[,1:6]
+    # Application title
+    #titlePanel("How a meta-analysis works")
+    plotOutput("metaPlot")
+    
+    fluidRow(
+        column(4,
+               h4("PROVE IT")
+               ),
+        
+        column(8,
+               sliderInput("yi_1",
+                           label = NULL, 
+                           min = 0.5,
+                           max = 1.5,
+                           value = 0.84)
+               )
+        )
+        
+        fluidRow(
+            column(4,
+                  h4("A-TO-Z")
+            ),
+
+            column(8,
+                   sliderInput("yi_2",
+                               label = NULL, 
+                               min = 0.5,
+                               max = 1.5,
+                               value = 0.860)
+            )
+        )
+    
+    fluidRow(
+        column(4,
+               h4("TNT")
+        ),
+        
+        column(8,
+               sliderInput("yi_3",
+                           label = NULL, 
+                           min = 0.5,
+                           max = 1.5,
+                           value = 0.801)
+        )
+       
+    )
+    fluidRow(
+        column(4,
+               h4("IDEAL")
+        ),
+        
+        column(8,
+               sliderInput("yi_4",
+                           label = NULL, 
+                           min = 0.5,
+                           max = 1.5,
+                           value = 0.890)
+        )
+      
+    )
+    
+    actionButton("reset", "Reset values")
+
+```
+```{r, context="server"}
+    observeEvent(input$reset, {
+        # Reset values back to original
+        updateSliderInput(session, "yi_1", value = 0.840)
+        updateSliderInput(session, "yi_2", value = 0.860)
+        updateSliderInput(session, "yi_3", value = 0.801)
+        updateSliderInput(session, "yi_4", value = 0.880)
+    })
+
+    output$metaPlot <- renderPlot({
+
+        dat <- escalc(measure="RR", ai=ep1t, n1i=nt, ci=ep1c, n2i=nc, data=dat, slab=trial)
+        
+        # Modify effect sizes (which are Risk Ratios so have to be logs)
+        dat[1, "yi"] <- log(input$yi_1)
+        dat[2, "yi"] <- log(input$yi_2)
+        dat[3, "yi"] <- log(input$yi_3)
+        dat[4, "yi"] <- log(input$yi_4)
+        
+        res <- rma(yi, vi, data=dat, method="DL")
+        dat$weights <- paste0(round(weights(res)), "%")   # weights in % (rounded)
+        dat$pvals   <- round(summary(dat)$pval, digits=3) # p-values of the individual trials
+        forest(res, xlim=c(-1,2), atransf=exp, at=log(c(2/3, 1, 3/2)),
+               header=TRUE, top=2, mlab="Summary", efac=c(0,1,3),
+               ilab=data.frame(dat$weights, dat$pvals), ilab.xpos=c(0.8,1.2), ilab.pos=2)
+        text(0.8, -1, "100%", pos=2)
+        text(1.2, -1, formatC(res$pval, format="f", digits=5), pos=2)
+        text(0.8,  6, "Weight",  pos=2, font=2)
+        text(1.2,  6, "P-Value", pos=2, font=2)
+        
+    })
 
 ```
 
-### Exercise with Code
+In the summary or **forest plot** the larger the symbol for each study the greater its weight in the meta-analysis. The diamond symbol shows the overall effect size for all studies, adjusting for weights, with the length of the diamond indicating the variability across the studies.
 
-*Here's an exercise with some prepopulated code as well as `exercise.lines = 5` to provide a bit more initial room to work.*
-
-Now write a function that adds any two numbers and then call it:
-
-```{r add-function, exercise=TRUE, exercise.lines = 5}
-add <- function() {
-  
-}
+```{r interpret_basic_meta}
+question("Altering the effect size (risk ratios) of the 'PROVE IT' and 'A-TO-Z' trials has a much smaller effect than changing the risk ratios for the 'INT' and 'IDEAL' trials. What is the most likely explanation?",
+         answer("The PROVE IT and A-TO-Z trials were done on different cohorts of patients"),
+         answer("The time used in each set of studies was not the same"),
+         answer("More patients had heart disease in these studies"),
+         answer("The INT and IDEAL trials had more than twice as many patients", correct = TRUE),
+         answer("The 95% confidence intervals are more than twice that for the other studies"))
 ```
-
-## Topic 2
-
-### Exercise with Hint
-
-*Here's an exercise where the chunk is pre-evaulated via the `exercise.eval` option (so the user can see the default output we'd like them to customize). We also add a "hint" to the correct solution via the chunk immediate below labeled `print-limit-hint`.*
-
-Modify the following code to limit the number of rows printed to 5:
-
-```{r print-limit, exercise=TRUE, exercise.eval=TRUE}
-mtcars
-```
-
-```{r print-limit-hint}
-head(mtcars)
-```
-
-### Quiz
-
-*You can include any number of single or multiple choice questions as a quiz. Use the `question` function to define a question and the `quiz` function for grouping multiple questions together.*
-
-Some questions to verify that you understand the purposes of various base and recommended R packages:
-
 
