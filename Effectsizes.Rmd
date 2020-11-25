@@ -137,7 +137,7 @@ If two continuous variables have a high correlation with each other the scatter 
 
 However, in general for meta-analysis, we do not work with the raw correlations, but instead convert them to **Fisher's _z_ scores**. Note: do not confuse this with the z-statistic sometimes used in statistical tests.
 
-## A simple example of meta-analysis
+## Interactive forest plot of meta-analysis
 This uses the example taken from Chapter 1 of Borenstein. It is based on 4 trials of statins to see if they reduce the chance of heart disease. It is based on risk-ratios.
 
 The raw data can be accessed in the R data.frame below. The columns represent:
@@ -264,3 +264,49 @@ question("Altering the effect size (risk ratios) of the 'PROVE IT' and 'A-TO-Z' 
          answer("The INT and IDEAL trials had more than twice as many patients", correct = TRUE),
          answer("The 95% confidence intervals are more than twice that for the other studies"))
 ```
+
+## How to interpret the forest plot
+### Effect size
+Remember that there are different ways of measuring an effect size, depending on your type of data, but they are all trying to measure the result of your "intervention" : think back to the PICO concept of defining the question used in a systematic review and meta-analysis. Your intervention might be an experimental one, such as trialling different haymeadow management schemes, or it might be a more "passive" one, for example comparisons of the numbers of passerine bird species in primary and secondary woodland.
+
+In the example you've just looked at the effect size is a risk ratio. In the internals of the meta-analysis, the log(risk ratio) is used for the reasons just explained, but it is displayed in its original form. So if you have a risk ratio of 1.0 then there is no difference in the risk of heart disease between the treatment and the control. Where the Risk Ratio is less than 1.0, then the risk was lower in the patients receiving statins, whilst if the risk ratio is greater than 1.0 then the risk was lower in the control group.
+
+The effect size is shown by a square: the further away the square is from 1.0 the bigger the effect size. So you can see that the biggest effect size is in the TNT trial, as the square is furthest from 1.0. So the **position** of the square indicates both the **magnitude** and the **direction** of the effect. Here all the effect sizes have the same direction, being lower than 1.0, indicating reduced heart disease in patients receiving statins.
+
+**Note** When effect sizes are based on standardised mean differences, then a value of 0 represents no difference between the intervention and control group.
+
+### Precision
+Precision is shown in the forest plot by 95% confidence intervals, and you can see that these are relatively large for the PROVE IT trial and smaller for the IDEAL trial. Precision is affected by the number of replicates and study design. For example, here is an example of three trials with different sample sizes. None of them have any effect on the standardised difference, as they are all centred on zero, but you can see that the precision is better with the smaller sample sizes:
+
+![](www/sampsize_var.png){width=75%}
+
+### Study weights
+The size of the square indicates the weight given to a study, and the greater the precision, as shown by the 95% confidence intervals in the forest plot, the higher the precision. Hence TNT and IDEAL receive high weights, whilst the PROVE-IT study the lowest weight. In general the precision is a result of sample size, so studies with larger number of replicates tend to have larger weights, but sometimes the precision is a result of better experimental design.
+
+### p-values (the controversial bit!)
+The p-values for the individual studies are for the null hypothesis $H_0$ so if the 95% confidence intervals cross 1.0 the p-value will be greater than 0.05. For three out of the four studies shown here, the p-value is greater than 0.05.
+
+**Note**
+The current 'stable' version of the R `metafor` package which is hosted on the main R CRAN website does not automatically calculate individual p-values. If you want the most up-to-date 'development' version of `metafor` which has these extra functions, then you need to run:
+
+```{r, eval=FALSE, echo=TRUE}
+install.packages("devtools")
+devtools::install_github("wviechtb/metafor")
+```
+
+This should work automatically on a MacBook. If you have a Windows PC, you will also [need to install RTools](https://cran.r-project.org/bin/windows/Rtools/). It is not essential to have the development version to complete BIO8075, but you might find some of its extra features useful, and I have used it to create some plots.
+
+### Overall summary effect
+**Overall effect size**
+
+This is shown in the bottom line of the forest plot, at 0.85, in other words patients receiving statins were 15% less likely to have a heart attack. The diamond shows the location in the plot. The summary effect is the weighted average of the individual study effects, but **how** we weight them depends on whether we use a "fixed-effects" or "random-effects" model for our meta-analysis.
+
+**Overall precision**
+
+Our diamond is located at 0.85, and the width of the diamond indicates the precision of our overall estimate. Here it goes from 0.79 to 0.92, which does not include 1.0, hence the p-value is less than 0.05.
+
+**Overall p-value**
+
+You might be surprised that the overall p-value is as low as 0.00003 for this study, given that only one of the original studies had a p-value less than 0.05. This low p-value reflects the magnitude of the overall effect size, and the larger volume of information on which it is based, i.e. 4 studies rather than just one.
+
+
