@@ -1,5 +1,5 @@
 ---
-title: "p-values, NHST, effect sizes"
+title: "Basics of meta-analysis"
 output: learnr::tutorial
 runtime: shiny_prerendered
 ---
@@ -14,6 +14,10 @@ dat <- statin_dat
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+## Introduction
+This website gives you a very simple worked example of a meta-analysis, to demonstrate how a meta-analysis 'works', the typical display in the form of a 'forest plot', and the advantages of meta-analyses that can be obtained through pooling separate studies to obtain greater 'power'. A meta-analysis is much more useful than a simple narrative review, as it allows you to quantify the overall effects across a range of different studies. It is this increased power through pooling of studies that makes it so useful.
+
+However, first it is useful to do a quick revision of some basic concepts, in particular _population_ vs _sample_ estimates, what we really mean by "statistical significance" and null hypothesis significance testing, and their associated, often disputed, p-values. We also give a brief overview of how to measure treatment effect sizes, which are covered in more detail in a separate website.
 
 ## p-values, Effect sizes
 
